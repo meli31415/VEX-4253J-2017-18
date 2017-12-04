@@ -1,0 +1,21 @@
+/**
+* Change control program according the joystick/partner joysticks connection 
+*
+* note: when writing partner joystick program, keep in mind the priority of if-else statments 
+*/
+
+//detect the number of joysticks connected
+	if((nVexRCReceiveState & (vrXmit1 | vrXmit2)) == (vrXmit1 | vrXmit2))
+				TwoJoysticks = true;
+			else
+				TwoJoysticks = false;
+
+	if( TwoJoysticks == false){
+    
+    //if only joystick is connected
+    
+  } else {
+  
+    //if two joysticks are connected 
+  }
+  
