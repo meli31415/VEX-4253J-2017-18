@@ -1,0 +1,124 @@
+/**
+*LCD_Task. task that controls the LCD displaying states
+*
+* If no button is pressed
+*   - display the battery voltages (main and extended)
+* If CENTER and LEFT buttons are pressed
+*		- runs the pre_auton function (typically used to reset the Gyro Sensor
+* If CENTER and RIGHT buttons are pressed
+*	  - runs the AutoSelect function (uses LCD and potentiometers to select the program and sides)
+*		- press CENTER button to exist this state
+*
+*/
+
+task LCD_Task(){
+
+ while(true){
+
+	while(nLCDButtons != 3 && nLCDButtons !=6 ){
+				// 3 = LEFT and CENTER buttons are pressed
+				// 6 = RIGHT and CENTER buttons are pressed
+
+	  //LCD DISPLAY :Battery (main and expander) Voltages
+
+		    //set up for LCD + Battery display
+	    	bLCDBacklight = true;
+		    string mainBattery, expanderBattery;
+
+	    	clearLCDLine(0);
+				clearLCDLine(1);
+
+			//main battery
+			displayLCDString(0, 0, "Bat: ");
+			//Build the value string to be displayed
+			sprintf(mainBattery, "%1.2f%c", nImmediateBatteryLevel/1000.0,'V');
+			displayNextLCDString(mainBattery);
+
+			//get the Analog value from Battery expander, and display
+			displayLCDString(1, 0, "Ext:");
+			//Build the value to be displayed
+			sprintf(expanderBattery, "%1.2f%c", SensorValue(PowerExpander)/(4*45.6),'V');
+			displayNextLCDString(expanderBattery);
+			wait1Msec(1);
+	}
+
+		if( nLCDButtons == 3){ //RIGHT and CENTER
+				waitForRelease();
+		  	pre_auton(); 
+		} else if(nLCDButtons == 6){//LEFT and CENTER
+				waitForRelease();
+				AutoSelect(); //select the autonomous with potentiometer 
+		}
+
+	}//end while (true)
+}//end LCD_task
+
+// uses potentiometer to select the type of program
+// check AutoSelect function
+enum Program
+{
+  Zone10,
+  Zone20,
+  Stack,
+  nothing
+};
+
+// uses potentiometer to select the side
+// check AutoSelect function
+enum Side
+{
+  BlueLeft,
+  BlueRight,
+  RedLeft,
+  RedRight
+};
+
+Program SelectedProgram;
+Side SelectedSide;
+int DelayTime;
+/**
+* AutoSelect
+*  uses LCD and potentiometer to select the autonomous program
+*
+*  Total of three potentiometers
+*  	1. Selects the type of program (Zone10, Zone20, Stack, nothing)
+*	  2. Selects the side it is placed on (BlueLeft, BlueRight, RedLeft, RedRight)
+*		3. Selects the delay time before the program runs ( 1 - 4 seconds)
+*  Four positions for each potentiometer
+*  	- each represent one component (type of program, side, delay time)
+*  Press CENTER button on LCDto confirm, exist autoSelecting state
+*
+*/
+void AutoSelect(){
+
+	//Clear LCD
+	clearLCDLine(0);
+	clearLCDLine(1);
+
+  while(nLCDButtons != 2){//CENTER button
+
+  //Selects the type of program Program
+	if (SensorValue[ProgramSelect] <450){
+		SelectedProgram = Zone10;
+		displayLCDPos(0,0);
+ 		displayNextLCDString("P:Zone10 ");
+
+	}else if(SensorValue[ProgramSelect] <1800){
+		SelectedProgram = Zone20;
+		displayLCDPos(0,0);
+ 		displayNextLCDString("P:Zone20 ");
+
+	}else if(SensorValue[ProgramSelect] <3500){
+		SelectedProgram = Stack;
+		displayLCDPos(0,0);
+ 		displayNextLCDString("P: Stack ");
+
+	}else {
+	  SelectedProgram = nothing;
+	  displayLCDPos(0,0);
+ 		displayNextLCDString("P: Empty ");
+	}
+
+//Code for selecting time and side are similar 
+
+}
